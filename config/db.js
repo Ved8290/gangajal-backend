@@ -1,11 +1,6 @@
 
 const mongoose = require('mongoose');
-const dns = require('node:dns');
-
 const env = require('./env');
-
-// Use DNS servers that worked in your local Node.js test
-dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 mongoose.set('strictQuery', true);
 
@@ -14,12 +9,13 @@ let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = {
     conn: null,
-    promise: null
+    promise: null,
   };
 }
 
-const connectDB = async () => {
-  if (cached.conn && mongoose.connection.readyState === 1) {
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    cached.conn = mongoose.connection;
     return cached.conn;
   }
 
@@ -28,7 +24,6 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 15000,
       connectTimeoutMS: 15000,
       maxPoolSize: 10,
-      bufferCommands: false
     });
   }
 
@@ -40,9 +35,9 @@ const connectDB = async () => {
     cached.promise = null;
     cached.conn = null;
 
-    console.error('MongoDB connection failed:', error.message);
+    console.error('MongoDB connection error:', error.message);
     throw error;
   }
-};
+}
 
 module.exports = connectDB;
