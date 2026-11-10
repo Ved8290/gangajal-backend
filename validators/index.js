@@ -36,7 +36,10 @@ exports.createOrder = [
   body('items.*.productId').isMongoId(),
   body('items.*.quantity').isInt({ min: 1, max: 100 }).toInt(),
   body('idempotencyKey').optional().isString().isLength({ min: 8, max: 80 }),
-  body('paymentMethod').optional().isIn(['Cash on Delivery', 'UPI on Delivery', 'Bank Transfer']),
+  body('paymentMethod')
+  .notEmpty()
+  .isIn(['upi', 'bank'])
+  .withMessage('Invalid payment method'),
 ];
 
 exports.track = [body('orderId').trim().notEmpty().isLength({ max: 30 }), body('mobile').trim().matches(mobile)];
